@@ -1,0 +1,80 @@
+You can avoid passing the BuildContext across the async gap by using a StatefulWidget and a GlobalKey<ScaffoldMessengerState> to show a SnackBar when an error occurs. Here's an example of how to modify your ReportDetails component:
+
+dart
+Copy code
+import 'package:flutter/material.dart';
+import 'package:report_ease/report.dart';
+
+class ReportDetails extends StatefulWidget {
+  final Report report;
+  final Function(int, Report)? deleteReport;
+
+  const ReportDetails(
+      {required this.report, required this.deleteReport, Key? key})
+      : super(key: key);
+
+  @override
+  _ReportDetailsState createState() => _ReportDetailsState();
+}
+
+class _ReportDetailsState extends State<ReportDetails> {
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
+
+  Future<void> _handleDeleteReport() async {
+    final confirm = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Deletion'),
+        content: const Text('Are you sure you want to delete this report?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      if (widget.deleteReport != null) {
+        widget.deleteReport!(-1, widget.report);
+        Navigator.pop(context);
+      } else {
+        _scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
+          content: const Text('Error deleting report'),
+        ));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: _scaffoldMessengerKey,
+      appBar: AppBar(
+        title: const Text('Report Details'),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ... the rest of your widget tree ...
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: _handleDeleteReport,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+In this solution, I've changed the ReportDetails class to extend StatefulWidget and created a _ReportDetailsState class that extends State<ReportDetails>. I've also added a GlobalKey<ScaffoldMessengerState> called _scaffoldMessengerKey and assigned it as the key for the Scaffold.
+
+Now, the _handleDeleteReport function does not take the `BuildContext
