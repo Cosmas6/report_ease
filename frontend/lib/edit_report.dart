@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:report_ease/report.dart';
-import 'dart:developer' as developer;
+// import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -45,11 +45,11 @@ class _EditReportState extends State<EditReport> {
       },
       body: jsonEncode(report.toJson()),
     );
-    developer.log(
-      'Report ID',
-      name: 'reportease.app.edit_report',
-      error: response.statusCode,
-    );
+    // developer.log(
+    //   'Report ID',
+    //   name: 'reportease.app.edit_report',
+    //   error: response.statusCode,
+    // );
     if (response.statusCode == 200) {
       // Report was updated successfully
       // Navigate back to the previous screen

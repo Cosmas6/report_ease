@@ -3,7 +3,7 @@ import 'package:report_ease/report.dart';
 import 'package:report_ease/edit_report.dart';
 import 'package:report_ease/report_details.dart';
 import 'package:http/http.dart' as http;
-// import 'dart:developer' as developer;
+import 'dart:developer' as developer;
 
 import 'dart:convert';
 
@@ -25,6 +25,12 @@ class _ListReportsState extends State<ListReports> {
       },
     );
 
+    developer.log(
+      'responseStatusCode',
+      name: 'reportease.app.list_report',
+      error: response.statusCode,
+    );
+
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
       final reports = <Report>[];
@@ -34,7 +40,11 @@ class _ListReportsState extends State<ListReports> {
         report.id = item['_id'];
         reports.add(report);
       }
-
+      developer.log(
+        'reportsArray',
+        name: 'reportease.app.list_report',
+        error: reports,
+      );
       return reports;
     } else {
       throw Exception('Failed to load reports');
@@ -57,19 +67,27 @@ class _ListReportsState extends State<ListReports> {
       MaterialPageRoute(
         builder: (context) => EditReport(
           report: report,
-          onUpdateSuccess: () {
-            Navigator.pop(context, true); // Pop the EditReport screen
+          onUpdateSuccess: (updatedReport) {
+            Navigator.pop(context, updatedReport); // Pop the EditReport screen
             // Refresh the report_details component or perform any other action you need
           },
         ),
       ),
     );
+
     if (result == true) {
-      // Report was updated successfully, so refresh the list
-      final reports = await _fetchReports();
-      setState(() {
-        _reports = reports;
-      });
+      try {
+        final reports = await _fetchReports();
+        setState(() {
+          _reports = reports;
+        });
+      } catch (e) {
+        developer.log(
+          '_reportsState',
+          name: 'reportease.app.list_report',
+          error: e,
+        );
+      }
     }
   }
 
@@ -97,7 +115,8 @@ class _ListReportsState extends State<ListReports> {
     // If the user confirmed the deletion, send a DELETE request to the server
     if (confirm == true) {
       final response = await http.delete(
-        Uri.parse('https://nodejs.tmwdp.co.ke/FlutterReportRoute/delete-report/${report.id}'),
+        Uri.parse(
+            'https://nodejs.tmwdp.co.ke/FlutterReportRoute/delete-report/${report.id}'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -135,42 +154,74 @@ class _ListReportsState extends State<ListReports> {
       appBar: AppBar(
         title: const Text('List Reports'),
       ),
-      body: ListView.builder(
-        itemCount: _reports.length,
-        itemBuilder: (BuildContext context, int index) {
-          final report = _reports[index];
-          return Card(
-            child: ListTile(
-              title: Text(report.name),
-              subtitle: Text(report.department),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.expand_more),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ReportDetails(reportHolder: ReportHolder(report: report)),
-                        ),
-                      );
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      _editReport(report.copyWith(id: report.id));
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => _deleteReport(index, report),
-                  ),
-                ],
+      body: FutureBuilder<List<Report>>(
+        future: _fetchReports(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Show a loading spinner while the reports are being fetched
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            // Show an error message if the reports failed to load
+            return Center(
+              child: Text('Failed to load reports: ${snapshot.error}'),
+            );
+          } else {
+            // Display the reports
+            final reports = snapshot.data!;
+            return RefreshIndicator(
+              onRefresh: () async {
+                setState(() {
+                  _reports = [];
+                });
+                final updatedReports = await _fetchReports();
+                setState(() {
+                  _reports = updatedReports;
+                });
+              },
+              child: ListView.builder(
+                itemCount: reports.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final report = reports[index];
+                  return Card(
+                    child: ListTile(
+                      title: Text(report.name),
+                      subtitle: Text(report.department),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.expand_more),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ReportDetails(
+                                      reportHolder:
+                                          ReportHolder(report: report)),
+                                ),
+                              );
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () {
+                              _editReport(report.copyWith(id: report.id));
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => _deleteReport(index, report),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
-            ),
-          );
+            );
+          }
         },
       ),
     );
