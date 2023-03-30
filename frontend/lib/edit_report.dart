@@ -9,7 +9,9 @@ class EditReport extends StatefulWidget {
   final Function onUpdateSuccess;
 
   const EditReport(
-      {required this.report, required this.onUpdateSuccess, Key? key})
+      {required this.report,
+      required this.onUpdateSuccess,
+      Key? key})
       : super(key: key);
 
   @override
@@ -45,6 +47,7 @@ class _EditReportState extends State<EditReport> {
       },
       body: jsonEncode(report.toJson()),
     );
+
     // developer.log(
     //   'Report ID',
     //   name: 'reportease.app.edit_report',

@@ -61,36 +61,6 @@ class _ListReportsState extends State<ListReports> {
     });
   }
 
-  Future<void> _editReport(Report report) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditReport(
-          report: report,
-          onUpdateSuccess: (updatedReport) {
-            Navigator.pop(context, updatedReport); // Pop the EditReport screen
-            // Refresh the report_details component or perform any other action you need
-          },
-        ),
-      ),
-    );
-
-    if (result == true) {
-      try {
-        final reports = await _fetchReports();
-        setState(() {
-          _reports = reports;
-        });
-      } catch (e) {
-        developer.log(
-          '_reportsState',
-          name: 'reportease.app.list_report',
-          error: e,
-        );
-      }
-    }
-  }
-
   Future<void> _deleteReport(int index, Report report) async {
     // Show a dialog to confirm deletion
 
@@ -154,76 +124,72 @@ class _ListReportsState extends State<ListReports> {
       appBar: AppBar(
         title: const Text('List Reports'),
       ),
-      body: FutureBuilder<List<Report>>(
-        future: _fetchReports(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // Show a loading spinner while the reports are being fetched
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.hasError) {
-            // Show an error message if the reports failed to load
-            return Center(
-              child: Text('Failed to load reports: ${snapshot.error}'),
-            );
-          } else {
-            // Display the reports
-            final reports = snapshot.data!;
-            return RefreshIndicator(
-              onRefresh: () async {
-                setState(() {
-                  _reports = [];
-                });
-                final updatedReports = await _fetchReports();
-                setState(() {
-                  _reports = updatedReports;
-                });
-              },
-              child: ListView.builder(
-                itemCount: reports.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final report = reports[index];
-                  return Card(
-                    child: ListTile(
-                      title: Text(report.name),
-                      subtitle: Text(report.department),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.expand_more),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ReportDetails(
-                                      reportHolder:
-                                          ReportHolder(report: report)),
-                                ),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () {
-                              _editReport(report.copyWith(id: report.id));
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => _deleteReport(index, report),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+      body: Stack(children: [
+        FutureBuilder<List<Report>>(
+          future: _fetchReports(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              // Show a loading spinner while the reports are being fetched
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              // Show an error message if the reports failed to load
+              return Center(
+                child: Text('Failed to load reports: ${snapshot.error}'),
+              );
+            } else {
+              // Display the reports
+              final reports = snapshot.data!;
+              return RefreshIndicator(
+                onRefresh: () async {
+                  setState(() {
+                    _reports = [];
+                  });
+                  final updatedReports = await _fetchReports();
+                  setState(() {
+                    _reports = updatedReports;
+                  });
                 },
-              ),
-            );
-          }
-        },
-      ),
+                child: ListView.builder(
+                  itemCount: reports.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final report = reports[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text(report.name),
+                        subtitle: Text(report.department),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.expand_more),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ReportDetails(
+                                        reportHolder:
+                                            ReportHolder(report: report)),
+                                  ),
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () => _deleteReport(index, report),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            }
+          },
+        ),
+      ]),
     );
   }
 }
