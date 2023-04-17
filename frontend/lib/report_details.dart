@@ -3,10 +3,6 @@ import 'package:report_ease/report.dart';
 import 'package:report_ease/edit_report.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-// import 'package:printing/printing.dart';
-// import 'dart:io';
-// import 'package:path_provider/path_provider.dart';
-// import 'package:permission_handler/permission_handler.dart';
 
 class ReportHolder {
   Report report;
@@ -35,10 +31,18 @@ pw.Document generateReportPdf(Report report) {
           children: [
             pw.Text('Report Details'),
             pw.Divider(),
-            pw.Text('Name: ${report.name}'),
-            pw.Text('Department: ${report.department}'),
-            pw.Text('Activity: ${report.activity}'),
-            // Add any additional fields as needed
+            pw.Text('Project Name: ${report.projectName}'),
+            pw.Text('Site Location: ${report.siteLocation}'),
+            pw.Text('Team Leader: ${report.teamLeader}'),
+            pw.Text('Date: ${report.date}'),
+            pw.Text('Work Hours: ${report.workHours}'),
+            pw.Text('Completed Tasks: ${report.completedTasks}'),
+            pw.Text('Pending Tasks: ${report.pendingTasks}'),
+            pw.Text('Materials Used: ${report.materialsUsed}'),
+            pw.Text('Issues and Challenges: ${report.issuesChallenges}'),
+            pw.Text('Safety Incidents: ${report.safetyIncidents}'),
+            pw.Text('Progress Photos: ${report.progressPhotos}'),
+            pw.Text('Next Day Plan: ${report.nextDayPlan}'),
           ],
         ); // Column
       },
@@ -47,38 +51,6 @@ pw.Document generateReportPdf(Report report) {
 
   return pdf;
 }
-
-// Future<bool> _requestStoragePermission() async {
-//   PermissionStatus status = await Permission.storage.status;
-//   if (status.isDenied) {
-//     status = await Permission.storage.request();
-//   }
-//   return status.isGranted;
-// }
-
-// Future<void> _savePdfToDevice(pw.Document pdf) async {
-//   bool permissionGranted = await _requestStoragePermission();
-//   if (!permissionGranted) {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       const SnackBar(content: Text('Storage permission is not granted')),
-//     );
-//     return;
-//   }
-
-//   try {
-//     final directory = await getExternalStorageDirectory();
-//     final pdfFile = File('${directory.path}/report.pdf');
-//     await pdfFile.writeAsBytes(await pdf.save());
-
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       SnackBar(content: Text('PDF saved to ${pdfFile.path}')),
-//     );
-//   } catch (e) {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       SnackBar(content: Text('Error saving PDF: $e')),
-//     );
-//   }
-// }
 
 class ReportDetailsState extends State<ReportDetails> {
   Future<void> _navigateToEditReport(Report report) async {
@@ -118,16 +90,59 @@ class ReportDetailsState extends State<ReportDetails> {
             ],
             rows: [
               DataRow(cells: [
-                const DataCell(Text('Name')),
-                DataCell(Text(widget.reportHolder.report.name)),
+                const DataCell(Text('Project Name')),
+                DataCell(Text(widget.reportHolder.report.projectName)),
               ]),
               DataRow(cells: [
-                const DataCell(Text('Department')),
-                DataCell(Text(widget.reportHolder.report.department)),
+                const DataCell(Text('Site Location')),
+                DataCell(Text(widget.reportHolder.report.siteLocation)),
               ]),
               DataRow(cells: [
-                const DataCell(Text('Activity')),
-                DataCell(Text(widget.reportHolder.report.activity)),
+                const DataCell(Text('Team Leader')),
+                DataCell(Text(widget.reportHolder.report.teamLeader)),
+              ]),
+              DataRow(cells: [
+                const DataCell(Text('Date')),
+                DataCell(
+                    Text(widget.reportHolder.report.date.toIso8601String())),
+              ]),
+              DataRow(cells: [
+                const DataCell(Text('Work Hours')),
+                DataCell(Text(widget.reportHolder.report.workHours.toString())),
+              ]),
+              DataRow(cells: [
+                const DataCell(Text('Completed Tasks')),
+                DataCell(
+                    Text(widget.reportHolder.report.completedTasks.join(', '))),
+              ]),
+              DataRow(cells: [
+                const DataCell(Text('Pending Tasks')),
+                DataCell(
+                    Text(widget.reportHolder.report.pendingTasks.join(', '))),
+              ]),
+              DataRow(cells: [
+                const DataCell(Text('Materials Used')),
+                DataCell(
+                    Text(widget.reportHolder.report.materialsUsed.join(', '))),
+              ]),
+              DataRow(cells: [
+                const DataCell(Text('Issues and Challenges')),
+                DataCell(Text(
+                    widget.reportHolder.report.issuesChallenges.join(', '))),
+              ]),
+              DataRow(cells: [
+                const DataCell(Text('Safety Incidents')),
+                DataCell(Text(
+                    widget.reportHolder.report.safetyIncidents.join(', '))),
+              ]),
+              DataRow(cells: [
+                const DataCell(Text('Progress Photos')),
+                DataCell(
+                    Text(widget.reportHolder.report.progressPhotos.join(', '))),
+              ]),
+              DataRow(cells: [
+                const DataCell(Text('Next Day Plan')),
+                DataCell(Text(widget.reportHolder.report.nextDayPlan)),
               ]),
             ],
           ),
@@ -143,12 +158,7 @@ class ReportDetailsState extends State<ReportDetails> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.save),
-                  onPressed: () async {
-                    // final pdf = generateReportPdf(widget.reportHolder.report);
-                    // _savePdfToDevice(pdf);
-                    // await Printing.sharePdf(
-                    //     bytes: await pdf.save(), filename: 'report.pdf');
-                  },
+                  onPressed: () async {},
                 ),
                 IconButton(
                   icon: const Icon(Icons.edit),
@@ -156,12 +166,6 @@ class ReportDetailsState extends State<ReportDetails> {
                     _navigateToEditReport(widget.reportHolder.report);
                   },
                 ),
-                // IconButton(
-                //   icon: const Icon(Icons.delete),
-                //   onPressed: () {
-                //     // Delete the report
-                //   },
-                // ),
               ],
             ),
           ),

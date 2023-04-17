@@ -156,8 +156,8 @@ class _ListReportsState extends State<ListReports> {
                     final report = reports[index];
                     return Card(
                       child: ListTile(
-                        title: Text(report.name),
-                        subtitle: Text(report.department),
+                        title: Text(report.projectName),
+                        subtitle: Text(report.date.toIso8601String()),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
